@@ -1,0 +1,97 @@
+Expanding on the architectural design, specifically focusing on the user models and the idea of assigning a unique numerical identifier (similar to a Medical Record Number, MRN) to each user, is a crucial aspect for the functionality and security of your application. Let's break down the user models and their attributes, including the unique identifier.
+
+### Architectural Overview
+
+#### User Models
+
+1. **Patient Model**
+   - **Attributes**:
+     - Patient ID (Primary Key, unique numerical identifier)
+     - Name
+     - Date of Birth
+     - Email
+     - Password (hashed)
+     - Contact Information (phone number, address)
+     - Medical Records (One-to-Many relationship with a Medical Record model)
+     - Consent Records (One-to-Many relationship with a Consent model)
+     - (Other personal/medical details as required)
+
+2. **Facility Staff Model**
+   - **Attributes**:
+     - Staff ID (Primary Key, unique numerical identifier)
+     - Name
+     - Email
+     - Password (hashed)
+     - Facility Information (Foreign Key to a Facility model)
+     - Role/Position
+     - (Other relevant details)
+
+3. **Physician Model** (if different from facility staff)
+   - **Attributes**:
+     - Physician ID (Primary Key, unique numerical identifier)
+     - Name
+     - Specialization
+     - Email
+     - Password (hashed)
+     - Contact Information
+     - (Other relevant details)
+
+4. **Facility Model**
+   - **Attributes**:
+     - Facility ID (Primary Key, unique numerical identifier)
+     - Name
+     - Location
+     - Contact Information
+     - (Other relevant details)
+
+5. **Medical Record Model**
+   - **Attributes**:
+     - Record ID (Primary Key, unique numerical identifier)
+     - Patient ID (Foreign Key)
+     - Date of Record
+     - Type of Record (e.g., test result, physician note)
+     - Document (file storage or link)
+     - (Other relevant details)
+
+6. **Consent Model**
+   - **Attributes**:
+     - Consent ID (Primary Key, unique numerical identifier)
+     - Patient ID (Foreign Key)
+     - Facility/Physician ID (Foreign Key)
+     - Consent Type (e.g., document access, data sharing)
+     - Validity Period
+     - (Other relevant details)
+
+### Unique Numerical Identifier
+
+- Each user (patient, facility staff, physician) and record (medical record, consent) has a unique numerical identifier.
+- This can be implemented in Django using models.AutoField for an auto-incrementing primary key or models.BigAutoField for a larger range.
+- The identifier serves as a reliable reference for internal operations and data management.
+
+### Implementation in Django
+
+Here's an example of how the Patient model might be implemented in Django:
+
+```python
+from django.db import models
+
+class Patient(models.Model):
+    patient_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100)
+    date_of_birth = models.DateField()
+    email = models.EmailField(unique=True)
+    password = models.CharField(max_length=50)  # Hashed password
+    contact_info = models.TextField()
+    # ... other fields ...
+```
+
+### Security and Privacy Considerations
+
+- Ensure that all personal and sensitive data is stored securely.
+- Implement proper authentication and authorization mechanisms.
+- Follow best practices for data encryption and privacy.
+
+### Summary
+
+This architectural design focuses on creating a robust and secure user model system with unique numerical identifiers for each entity. It ensures efficient data management and enhances the security and integrity of the application. The design is scalable and can be adapted as the application evolves.
+
