@@ -1,6 +1,7 @@
 
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -30,6 +31,7 @@ INSTALLED_APPS = [
     # 3rd party
     'rest_framework',
     'corsheaders',
+    'phonenumber_field',
     # local
     "users", 
     
@@ -126,3 +128,22 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3001",  
     # Add more origins as needed
 ]
+
+#..ADDED..
+AUTH_USER_MODEL = "users.CustomUser"
+
+#..ADDED --- Enable internationalization
+USE_I18N = True
+
+# Set the default language for your site.
+LANGUAGE_CODE = 'en-us'  # English, USA
+
+# Define the available languages
+LANGUAGES = [
+    ('en', 'English'),
+    ('es', 'Spanish'),
+    # Add more languages here
+]
+
+# Path where Django will store the translation files
+LOCALE_PATHS = [os.path.join(BASE_DIR, 'locale')]

@@ -4,65 +4,44 @@ from django.contrib.auth.models import AbstractUser
 from django.dispatch import receiver
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
+from django.utils import timezone
+from django.core.exceptions import ValidationError
+from phonenumber_field.modelfields import PhoneNumberField
 
-from .managers import CustomUserManager
+from .manager import CustomUserManager
 
+# def profile_picture_upload_path(instance, filename):
+#     return f"user/{instance.id}/profile_picture/{filename}"
 
-def profile_picture_upload_path(instance, filename):
-    return f"user/{instance.id}/profile_picture/{filename}"
-
-
-def default_icon_image():
-    return "user/default/account.png"
-
+# def default_icon_image():
+#     return "user/default/account.png"
 
 class CustomUser(AbstractUser):
+    objects = CustomUserManager()
+
     username = models.CharField(_("username"), max_length=30, unique=True)
     email = models.EmailField(_("email address"), unique=True)
-
-    profile_picture = models.FileField(
-        upload_to=profile_picture_upload_path,
-        blank=True,
-        null=True,
-        default=default_icon_image,
-    )
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["username"]
 
-    objects = CustomUserManager()
-
-    def save(self, *args, **kwargs):
-        """
-        Overrides the default save method to delete the old profile_picture
-        if a new one is uploaded or updated.
-        """
-        if self.id:
-            existing_instance = get_object_or_404(CustomUser, id=self.id)
-
-            # Delete the old profile_picture if a different one is provided
-            if (
-                existing_instance.profile_picture
-                and self.profile_picture
-                and existing_instance.profile_picture != self.profile_picture
-            ):
-                existing_instance.profile_picture.delete(save=False)
-
-        super(CustomUser, self).save(*args, **kwargs)
-
-
-@receiver(models.signals.post_delete, sender=CustomUser)
-def delete_associated_files(sender, instance, **kwargs):
-    """
-    Deletes the associated files of specified fields after a CustomUser instance is deleted.
-    """
-    fields_with_files_to_delete = ["profile_picture"]
-    for file_field_name in fields_with_files_to_delete:
-        associated_file = getattr(instance, file_field_name, None)
-        if associated_file:
-            associated_file.delete(save=False)
-
     def __str__(self):
         return self.email
 
+class PatientProfile(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="patient_profile")
+    first_name = models.CharField(max_length=50,)
+    last_name = models.CharField(max_length=50,)
+    phone_number = PhoneNumberField(blank=False, unique=True)
+    date_of_birth = models.DateField() # add validation for dob serializer
+    street_address = models.CharField(max_length=255, blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    state = models.CharField(max_length=100, blank=True)
+    postal_code = models.CharField(max_length=20, blank=True)
+    country = models.CharField(max_length=50, blank=True)
+    emergency_contact_name = models.CharField(max_length=100, blank=True)
+    emergency_contact_phone = PhoneNumberField(blank=True)
+    emergency_contact_relation = models.CharField(max_length=50, blank=True)
 
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
