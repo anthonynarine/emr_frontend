@@ -1,10 +1,12 @@
 from rest_framework import serializers
 from .models import CustomUser, PatientProfile
 from django.core.validators import EmailValidator
+from phonenumber_field.serializerfields import PhoneNumberField
 import re
 
-# Serializer for the User model during registration
-class UserSignupSerializer(serializers.ModelSerializer):
+# Serializer for the User model registration will handle auth related request
+
+class UserRegistrationSerializer(serializers.ModelSerializer):
     # This field is used for confirming password, it won't be stored in the database
     password2 = serializers.CharField(
         write_only=True, required=True, style={"input_type": "password"}
@@ -64,3 +66,8 @@ class UserSignupSerializer(serializers.ModelSerializer):
         """
         user = CustomUser.objects.create_user(**validated_data)
         return user
+
+# Serializer for the User profile will handle bio related data
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    phone_number = PhoneNumberField()
